@@ -420,18 +420,18 @@
             </p>
             
             <div class="chat-preview">
-                <h3 style="margin-bottom: 1rem;">💬 Chatbot de GERAH</h3>
+                <h3 style="margin-bottom: 1rem;">💬 Inmochat - Tu Asistente Virtual</h3>
                 <p style="margin-bottom: 2rem;">Habla directamente con nuestro asistente virtual. Está aquí para ayudarte con todas tus preguntas sobre la propiedad.</p>
                 
-                <!-- Integración del Chatbot de Dialogflow -->
-                <div style="display: flex; justify-content: center; margin: 2rem 0;">
-                    <iframe
-                        allow="microphone;"
-                        width="350"
-                        height="430"
-                        src="https://console.dialogflow.com/api-client/demo/embedded/cc1ee5e0-d1f6-4789-8c1a-6489dbf65190"
-                        style="border: none; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-                    </iframe>
+                <!-- Integración del Dialogflow Messenger -->
+                <div style="margin: 2rem 0;">
+                    <df-messenger
+                        intent="WELCOME"
+                        chat-title="Inmochat"
+                        agent-id="cc1ee5e0-d1f6-4789-8c1a-6489dbf65190"
+                        language-code="es"
+                        style="--df-messenger-primary-color: #667eea; --df-messenger-titlebar-background-color: #667eea;">
+                    </df-messenger>
                 </div>
             </div>
         </div>
@@ -465,6 +465,7 @@
         </div>
     </footer>
 
+    <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
     <script>
         // Función para inicializar el chatbot (aquí integrarías Dialogflow)
         function initializeChatbot() {
