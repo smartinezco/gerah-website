@@ -360,164 +360,180 @@
         }
     </style>
 </head>
-<body>
-    <section class="hero-section">
-        <div class="floating-elements">
-            <div class="floating-element"></div>
-            <div class="floating-element"></div>
-            <div class="floating-element"></div>
-            <div class="floating-element"></div>
-        </div>
-        
-        <div class="hero-content">
-            <h1 class="logo">GERAH REAL STATE</h1>
-            <p class="tagline">Tu Hogar Te Está Esperando</p>
-            <p class="hero-description">
-                Gracias por tu interés en nuestras propiedades. Sabemos que encontrar el hogar perfecto es importante para ti, por eso hemos creado una experiencia personalizada para ayudarte en cada paso del proceso.
-            </p>
-            <div class="cta-container">
-                <a href="#chatbot" class="cta-button pulse">Comenzar Conversación</a>
-            </div>
-        </div>
-    </section>
+    <body>
+  <section class="hero-section">
+    <div class="floating-elements">
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+    </div>
 
-    <section class="features-section">
-        <div class="container">
-            <h2 class="section-title">¿Por Qué Elegir GERAH?</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🏠</div>
-                    <h3 class="feature-title">Propiedades Exclusivas</h3>
-                    <p class="feature-description">
-                        Acceso a una selección cuidadosamente curada de propiedades en alquiler, todas verificadas y de alta calidad para garantizar tu satisfacción.
-                    </p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3 class="feature-title">Respuesta Inmediata</h3>
-                    <p class="feature-description">
-                        Sistema automatizado de respuestas que te conecta al instante con la información que necesitas, sin esperas ni demoras.
-                    </p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">🤖</div>
-                    <h3 class="feature-title">Asistente Inteligente</h3>
-                    <p class="feature-description">
-                        Nuestro chatbot especializado está disponible 24/7 para resolver todas tus dudas y guiarte en el proceso de alquiler.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
+    <div class="hero-content">
+      <h1 class="logo">GERAH REAL STATE</h1>
+      <p class="tagline">Tu Hogar Te Está Esperando</p>
+      <p class="hero-description">
+        Gracias por tu interés en nuestras propiedades. Sabemos que encontrar el hogar perfecto es importante para ti, por eso hemos creado una experiencia personalizada para ayudarte en cada paso del proceso.
+      </p>
+      <div class="cta-container">
+        <!-- Mantén el anchor; si vienes desde el email ya traes ?ref= y ?msg= en la URL -->
+        <a href="#chatbot" class="cta-button pulse">Comenzar Conversación</a>
+      </div>
+    </div>
+  </section>
 
-    <section class="chatbot-section" id="chatbot">
-        <div class="chatbot-container">
-            <h2 class="chatbot-title">Habla Con Nuestro Asistente</h2>
-            <p class="chatbot-description">
-                Nuestro asistente virtual está aquí para ayudarte con cualquier pregunta sobre la propiedad que te interesa. Obtén información detallada, programa visitas y resuelve todas tus dudas al instante.
-            </p>
-            
-            <div class="chat-preview">
-                <h3 style="margin-bottom: 1rem;">💬 Inmochat - Tu Asistente Virtual</h3>
-                <p style="margin-bottom: 2rem;">Habla directamente con nuestro asistente virtual. Está aquí para ayudarte con todas tus preguntas sobre la propiedad.</p>
-                
-                <!-- Integración del Dialogflow Messenger -->
-                <div style="margin: 2rem 0;">
-                    <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
-                    <df-messenger
-                    chat-title="Inmochat"
-                    agent-id="cc1ee5e0-d1f6-4789-8c1a-6489dbf65190"
-                    language-code="es"
-                    ></df-messenger>
-                </div>
-            </div>
+  <section class="features-section">
+    <div class="container">
+      <h2 class="section-title">¿Por Qué Elegir GERAH?</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🏠</div>
+          <h3 class="feature-title">Propiedades Exclusivas</h3>
+          <p class="feature-description">
+            Acceso a una selección cuidadosamente curada de propiedades en alquiler, todas verificadas y de alta calidad para garantizar tu satisfacción.
+          </p>
         </div>
-    </section>
 
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="company-info">
-                <h3 class="company-name">GERAH REAL STATE</h3>
-                <p class="company-tagline">Conectando personas con sus hogares ideales</p>
-            </div>
-            
-            <div class="contact-info">
-                <div class="contact-item">
-                    <span>📧</span>
-                    <span>info@gerahrealestate.com</span>
-                </div>
-                <div class="contact-item">
-                    <span>📱</span>
-                    <span>+34 XXX XXX XXX</span>
-                </div>
-                <div class="contact-item">
-                    <span>📍</span>
-                    <span>Sevilla, España</span>
-                </div>
-            </div>
-            
-            <div class="copyright">
-                <p>&copy; 2025 GERAH REAL STATE. Todos los derechos reservados.</p>
-            </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3 class="feature-title">Respuesta Inmediata</h3>
+          <p class="feature-description">
+            Sistema automatizado de respuestas que te conecta al instante con la información que necesitas, sin esperas ni demoras.
+          </p>
         </div>
-    </footer>
 
-    <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
-    <script>
-        // Función para inicializar el chatbot (aquí integrarías Dialogflow)
-        function initializeChatbot() {
-            // Aquí puedes integrar tu chatbot de Dialogflow
-            alert('Aquí se integrará tu chatbot de Dialogflow. Reemplaza esta función con la integración real.');
-            
-            // Ejemplo de cómo podrías cargar el widget de Dialogflow:
-            /*
-            const script = document.createElement('script');
-            script.src = 'https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1';
-            document.head.appendChild(script);
-            */
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h3 class="feature-title">Asistente Inteligente</h3>
+          <p class="feature-description">
+            Nuestro chatbot especializado está disponible 24/7 para resolver todas tus dudas y guiarte en el proceso de alquiler.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="chatbot-section" id="chatbot">
+    <div class="chatbot-container">
+      <h2 class="chatbot-title">Habla Con Nuestro Asistente</h2>
+      <p class="chatbot-description">
+        Nuestro asistente virtual está aquí para ayudarte con cualquier pregunta sobre la propiedad que te interesa. Obtén información detallada, programa visitas y resuelve todas tus dudas al instante.
+      </p>
+
+      <div class="chat-preview">
+        <h3 style="margin-bottom: 1rem;">💬 Inmochat - Tu Asistente Virtual</h3>
+        <p style="margin-bottom: 2rem;">Habla directamente con nuestro asistente virtual. Está aquí para ayudarte con todas tus preguntas sobre la propiedad.</p>
+
+        <!-- Dialogflow Messenger (solo una vez) -->
+        <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+        <df-messenger
+          chat-title="Inmochat"
+          agent-id="cc1ee5e0-d1f6-4789-8c1a-6489dbf65190"
+          language-code="es">
+        </df-messenger>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="company-info">
+        <h3 class="company-name">GERAH REAL STATE</h3>
+        <p class="company-tagline">Conectando personas con sus hogares ideales</p>
+      </div>
+
+      <div class="contact-info">
+        <div class="contact-item">
+          <span>📧</span>
+          <span>info@gerahrealestate.com</span>
+        </div>
+        <div class="contact-item">
+          <span>📱</span>
+          <span>+34 XXX XXX XXX</span>
+        </div>
+        <div class="contact-item">
+          <span>📍</span>
+          <span>Sevilla, España</span>
+        </div>
+      </div>
+
+      <div class="copyright">
+        <p>&copy; 2025 GERAH REAL STATE. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ---- Utilidades ----
+    function getParam(name) {
+      return new URLSearchParams(window.location.search).get(name);
+    }
+
+    function smoothAnchorLinks() {
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    }
+
+    // ---- Animación de tarjetas ----
+    const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
         }
+      });
+    }, observerOptions);
 
-        // Smooth scrolling para los enlaces internos
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
+    document.addEventListener('DOMContentLoaded', () => {
+      // Aplica animación
+      const cards = document.querySelectorAll('.feature-card');
+      cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = `opacity 0.6s ease ${index * 0.2}s, transform 0.6s ease ${index * 0.2}s`;
+        observer.observe(card);
+      });
 
-        // Animación de entrada para las tarjetas
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
+      smoothAnchorLinks();
+    });
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
+    // ---- Auto-mensaje a Dialogflow con ?ref= y ?msg= ----
+    window.addEventListener('dfMessengerLoaded', () => {
+      const df = document.querySelector('df-messenger');
+      if (!df) return;
 
-        // Aplicar animación a las tarjetas cuando se carque la página
-        document.addEventListener('DOMContentLoaded', () => {
-            const cards = document.querySelectorAll('.feature-card');
-            cards.forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(30px)';
-                card.style.transition = `opacity 0.6s ease ${index * 0.2}s, transform 0.6s ease ${index * 0.2}s`;
-                observer.observe(card);
-            });
-        });
-    </script>
+      const ref = getParam('ref');
+      const msg = getParam('msg') || (ref ? `Estoy interesad@ en el piso ${ref}` : null);
+
+      if (!msg) return; // si no hay nada que enviar, no hacemos nada
+
+      // Muestra el mensaje del usuario en el UI
+      if (typeof df.renderCustomText === 'function') {
+        df.renderCustomText(msg);
+      }
+
+      // Envía la consulta al agente
+      if (typeof df.requestQuery === 'function') {
+        df.requestQuery({ query: msg });
+      } else if (typeof df.sendQuery === 'function') {
+        df.sendQuery(msg);
+      }
+
+      // Abre el widget
+      df.setAttribute('expand', 'true');
+
+      // Si venimos con ref/msg, baja hasta el bloque del chatbot
+      const target = document.querySelector('#chatbot');
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  </script>
 </body>
+
 </html>
+
