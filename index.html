@@ -376,7 +376,6 @@
         Gracias por tu interés en nuestras propiedades. Sabemos que encontrar el hogar perfecto es importante para ti, por eso hemos creado una experiencia personalizada para ayudarte en cada paso del proceso.
       </p>
       <div class="cta-container">
-        <!-- Mantén el anchor; si vienes desde el email ya traes ?ref= y ?msg= en la URL -->
         <a href="#chatbot" class="cta-button pulse">Comenzar Conversación</a>
       </div>
     </div>
@@ -465,9 +464,8 @@
 
   <script>
     // ---- Utilidades ----
-    function getParam(name) {
-      return new URLSearchParams(window.location.search).get(name);
-    }
+    const qs = new URLSearchParams(location.search);
+    const getParam = (k) => qs.get(k);
 
     function smoothAnchorLinks() {
       document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -491,7 +489,6 @@
     }, observerOptions);
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Aplica animación
       const cards = document.querySelectorAll('.feature-card');
       cards.forEach((card, index) => {
         card.style.opacity = '0';
@@ -499,41 +496,44 @@
         card.style.transition = `opacity 0.6s ease ${index * 0.2}s, transform 0.6s ease ${index * 0.2}s`;
         observer.observe(card);
       });
-
       smoothAnchorLinks();
     });
 
-    // ---- Auto-mensaje a Dialogflow con ?ref= y ?msg= ----
+    // ---- Auto-mensaje a Dialogflow con ?ref= y/o ?msg= ----
+    let alreadySent = false; // evita dobles envíos
+
     window.addEventListener('dfMessengerLoaded', () => {
       const df = document.querySelector('df-messenger');
-      if (!df) return;
+      if (!df || alreadySent) return;
 
-      const ref = getParam('ref');
-      const msg = getParam('msg') || (ref ? `Estoy interesad@ en el piso ${ref}` : null);
+      const ref = (getParam('ref') || '').trim();
+      const urlMsg = getParam('msg'); // ya vendrá URI-encoded desde tu email
+      const msg = urlMsg ? decodeURIComponent(urlMsg) : (ref ? `Estoy interesad@ en el piso ${ref}` : null);
 
-      if (!msg) return; // si no hay nada que enviar, no hacemos nada
+      if (!msg) return;
 
-      // Muestra el mensaje del usuario en el UI
+      // Pinta la burbuja como si la escribiera el usuario
       if (typeof df.renderCustomText === 'function') {
         df.renderCustomText(msg);
       }
 
-      // Envía la consulta al agente
+      // Envía el mensaje al agente (dispara tus intents)
       if (typeof df.requestQuery === 'function') {
         df.requestQuery({ query: msg });
       } else if (typeof df.sendQuery === 'function') {
         df.sendQuery(msg);
       }
 
-      // Abre el widget
+      // Abre el widget y baja al bloque
       df.setAttribute('expand', 'true');
+      document.querySelector('#chatbot')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-      // Si venimos con ref/msg, baja hasta el bloque del chatbot
-      const target = document.querySelector('#chatbot');
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      alreadySent = true;
     });
   </script>
 </body>
 
+
 </html>
+
 
