@@ -377,6 +377,13 @@
       </p>
       <div class="cta-container">
         <a href="#chatbot" class="cta-button pulse">Comenzar Conversación</a>
+        <!-- Dialogflow Messenger -->
+        <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+        <df-messenger
+          chat-title="Inmochat"
+          agent-id="cc1ee5e0-d1f6-4789-8c1a-6489dbf65190"
+          language-code="es">
+        </df-messenger>
       </div>
     </div>
   </section>
@@ -412,27 +419,7 @@
     </div>
   </section>
 
-  <section class="chatbot-section" id="chatbot">
-    <div class="chatbot-container">
-      <h2 class="chatbot-title">Habla Con Nuestro Asistente</h2>
-      <p class="chatbot-description">
-        Nuestro asistente virtual está aquí para ayudarte con cualquier pregunta sobre la propiedad que te interesa. Obtén información detallada, programa visitas y resuelve todas tus dudas al instante.
-      </p>
-
-      <div class="chat-preview">
-        <h3 style="margin-bottom: 1rem;">💬 Inmochat - Tu Asistente Virtual</h3>
-        <p style="margin-bottom: 2rem;">Habla directamente con nuestro asistente virtual. Está aquí para ayudarte con todas tus preguntas sobre la propiedad.</p>
-
-        <!-- Dialogflow Messenger -->
-        <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
-        <df-messenger
-          chat-title="Inmochat"
-          agent-id="cc1ee5e0-d1f6-4789-8c1a-6489dbf65190"
-          language-code="es">
-        </df-messenger>
-      </div>
-    </div>
-  </section>
+  
 
   <footer class="footer">
     <div class="footer-content">
@@ -558,6 +545,7 @@
 
 
 </html>
+
 
 
 
