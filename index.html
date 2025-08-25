@@ -388,25 +388,17 @@
         <div class="feature-card">
           <div class="feature-icon">🏠</div>
           <h3 class="feature-title">Propiedades Exclusivas</h3>
-          <p class="feature-description">
-            Acceso a una selección cuidadosamente curada de propiedades en alquiler, todas verificadas y de alta calidad para garantizar tu satisfacción.
-          </p>
+          <p class="feature-description">Acceso a una selección cuidadosamente curada de propiedades en alquiler, todas verificadas y de alta calidad.</p>
         </div>
-
         <div class="feature-card">
           <div class="feature-icon">⚡</div>
           <h3 class="feature-title">Respuesta Inmediata</h3>
-          <p class="feature-description">
-            Sistema automatizado de respuestas que te conecta al instante con la información que necesitas, sin esperas ni demoras.
-          </p>
+          <p class="feature-description">Sistema automatizado de respuestas que te conecta al instante con la información que necesitas.</p>
         </div>
-
         <div class="feature-card">
           <div class="feature-icon">🤖</div>
           <h3 class="feature-title">Asistente Inteligente</h3>
-          <p class="feature-description">
-            Nuestro chatbot especializado está disponible 24/7 para resolver todas tus dudas y guiarte en el proceso de alquiler.
-          </p>
+          <p class="feature-description">Nuestro chatbot está disponible 24/7 para resolver tus dudas y guiarte en el proceso de alquiler.</p>
         </div>
       </div>
     </div>
@@ -416,24 +408,23 @@
     <div class="chatbot-container">
       <h2 class="chatbot-title">Habla Con Nuestro Asistente</h2>
       <p class="chatbot-description">
-        Nuestro asistente virtual está aquí para ayudarte con cualquier pregunta sobre la propiedad que te interesa. Obtén información detallada, programa visitas y resuelve todas tus dudas al instante.
+        Te hemos preparado el primer mensaje. Al pulsar el botón se abrirá el chat y <strong>se copiará al portapapeles</strong> para que solo tengas que pegarlo y pulsar Enter.
       </p>
 
       <div class="chat-preview">
-        <h3 style="margin-bottom: 1rem;">💬 Inmochat - Tu Asistente Virtual</h3>
-        <p style="margin-bottom: 0.5rem;">Habla directamente con nuestro asistente virtual. Está aquí para ayudarte con todas tus preguntas sobre la propiedad.</p>
+        <h3 style="margin-bottom:1rem;">💬 Inmochat - Tu Asistente Virtual</h3>
 
-        <!-- CTA para enviar como usuario -->
-        <div id="auto-msg-cta" style="display:none; margin: 1rem 0; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 12px;">
-          <div style="font-size:0.95rem; margin-bottom:0.6rem;">Mensaje listo para enviar:</div>
+        <!-- Bloque asistido -->
+        <div id="auto-msg-cta" style="display:none; margin:1rem 0; padding:1rem; border:1px solid #e5e7eb; border-radius:12px;">
+          <div style="font-size:0.95rem; margin-bottom:0.6rem;">Mensaje preparado:</div>
           <div id="auto-msg-preview" style="background:#f3f4f6; padding:0.75rem 1rem; border-radius:10px; font-size:0.95rem; margin-bottom:0.8rem;"></div>
-          <button id="send-as-user" style="padding:0.65rem 1rem; border-radius:10px; border:none; cursor:pointer;">
-            Enviar ahora
+          <button id="open-and-copy" style="padding:0.65rem 1rem; border-radius:10px; border:none; cursor:pointer;">
+            Abrir chat y copiar mensaje
           </button>
-          <span id="send-hint" style="margin-left:0.6rem; font-size:0.85rem; color:#6b7280;"></span>
+          <div id="copy-hint" style="margin-top:0.6rem; font-size:0.9rem; color:#374151;"></div>
         </div>
 
-        <!-- Dialogflow Messenger (solo una vez) -->
+        <!-- Dialogflow Messenger -->
         <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
         <style>df-messenger{z-index:2147483647;}</style>
         <df-messenger
@@ -465,30 +456,30 @@
   </footer>
 
   <script>
-    // ---------- utilidades ----------
+    // utilidades
     const qs = new URLSearchParams(location.search);
     const getParam = k => qs.get(k);
 
-    // abrir y hacer scroll al bloque del chat
     function openChat(){
       const df = document.querySelector('df-messenger');
       if (df) {
-        df.setAttribute('expand', 'true');
+        df.setAttribute('expand','true');
         document.querySelector('#chatbot')?.scrollIntoView({ behavior:'smooth', block:'start' });
       }
     }
 
-    // intento de envío usando APIs/Evento del widget (sin tocar shadow DOM)
-    function sendViaAPIs(df, msg){
-      try { if (typeof df.requestQuery === 'function') { df.requestQuery({ query: msg }); return true; } } catch(e){}
-      try { if (typeof df.sendQuery === 'function')   { df.sendQuery(msg);                return true; } } catch(e){}
+    // copia al portapapeles (con fallback)
+    async function copyToClipboard(text){
       try {
-        const ev = new CustomEvent('dfMessengerSend', { detail: { query: msg } });
-        df.dispatchEvent(ev); window.dispatchEvent(ev);
-        // algunas builds lo aceptan
+        await navigator.clipboard.writeText(text);
         return true;
-      } catch(e){}
-      return false;
+      } catch(e){
+        // fallback viejo: crea un textarea temporal
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        return true;
+      }
     }
 
     function setupAutoMessage(){
@@ -497,40 +488,32 @@
       const msg = urlMsg ? decodeURIComponent(urlMsg.replace(/\+/g,' '))
                          : (ref ? `Estoy interesad@ en el piso ${ref}` : '');
 
-      if (!msg) return; // no hay mensaje preconfigurado
+      if (!msg) return;
 
-      // muestra el CTA
       const cta = document.getElementById('auto-msg-cta');
       const preview = document.getElementById('auto-msg-preview');
-      const btn = document.getElementById('send-as-user');
-      const hint = document.getElementById('send-hint');
+      const btn = document.getElementById('open-and-copy');
+      const hint = document.getElementById('copy-hint');
+
       cta.style.display = 'block';
       preview.textContent = msg;
 
-      btn.addEventListener('click', () => {
-        const df = document.querySelector('df-messenger');
-        if (!df) return;
-
+      btn.addEventListener('click', async () => {
         openChat();
-        const ok = sendViaAPIs(df, msg);
-
-        // feedback al usuario
-        hint.textContent = ok
-          ? 'Enviado al asistente.'
-          : 'Si no se envía, escribe cualquier letra en el cuadro y pulsa Enter.';
-
-        // opcional: ocultar CTA tras enviar
-        // cta.style.display = 'none';
+        const ok = await copyToClipboard(msg);
+        hint.innerHTML = ok
+          ? '✅ Texto copiado. <strong>Pega en el cuadro del chat y pulsa Enter</strong>.'
+          : '❗No se pudo copiar automáticamente. Selecciona el texto, cópialo y pégalo en el chat.';
+        // opcional: resaltar el chat para guiar al usuario
+        setTimeout(() => { document.querySelector('df-messenger')?.setAttribute('expand','true'); }, 100);
       });
     }
 
-    // iniciar
     document.addEventListener('DOMContentLoaded', () => {
       openChat();
       setupAutoMessage();
     });
 
-    // por si el widget necesita su propio evento para estar listo
     window.addEventListener('dfMessengerLoaded', openChat);
     document.addEventListener('df-messenger-loaded', openChat);
   </script>
@@ -541,6 +524,7 @@
 
 
 </html>
+
 
 
 
