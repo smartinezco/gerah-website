@@ -361,43 +361,6 @@
     </style>
 </head>
     <body>
-
-  <!-- 1) SECCIÓN DEL CHAT (LA PRIMERA) -->
-  <section class="chatbot-section" id="chatbot">
-    <div class="chatbot-container">
-      <h2 class="chatbot-title">Habla Con Nuestro Asistente</h2>
-      <p class="chatbot-description">
-        Te hemos preparado el primer mensaje. Al pulsar el botón se abrirá el chat y
-        <strong>se copiará al portapapeles</strong> para que solo tengas que pegarlo y pulsar Enter.
-      </p>
-
-      <div class="chat-preview">
-        <h3 style="margin-bottom:1rem;">💬 Inmochat – Tu Asistente Virtual</h3>
-
-        <!-- Bloque asistido (mensaje listo + botón) -->
-        <div id="auto-msg-cta" style="display:none; margin:1rem 0; padding:1rem; border:1px solid #e5e7eb; border-radius:12px;">
-          <div style="font-size:0.95rem; margin-bottom:0.6rem;">Mensaje preparado:</div>
-          <div id="auto-msg-preview" style="background:#f3f4f6; padding:0.75rem 1rem; border-radius:10px; font-size:0.95rem; margin-bottom:0.8rem;"></div>
-          <button id="open-and-copy" style="padding:0.65rem 1rem; border-radius:10px; border:none; cursor:pointer;">
-            Abrir chat y copiar mensaje
-          </button>
-          <div id="copy-hint" style="margin-top:0.6rem; font-size:0.9rem; color:#374151;"></div>
-        </div>
-
-        <!-- Dialogflow Messenger (cerrado por defecto) -->
-        <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
-        <style>df-messenger{z-index:2147483647;}</style>
-        <df-messenger
-          id="inmochat"
-          chat-title="Inmochat"
-          agent-id="cc1ee5e0-d1f6-4789-8c1a-6489dbf65190"
-          language-code="es">
-        </df-messenger>
-      </div>
-    </div>
-  </section>
-
-  <!-- 2) HERO -->
   <section class="hero-section">
     <div class="floating-elements">
       <div class="floating-element"></div>
@@ -418,7 +381,6 @@
     </div>
   </section>
 
-  <!-- 3) FEATURES -->
   <section class="features-section">
     <div class="container">
       <h2 class="section-title">¿Por Qué Elegir GERAH?</h2>
@@ -442,7 +404,40 @@
     </div>
   </section>
 
-  <!-- 4) FOOTER -->
+  <section class="chatbot-section" id="chatbot">
+    <div class="chatbot-container">
+      <h2 class="chatbot-title">Habla Con Nuestro Asistente</h2>
+      <p class="chatbot-description">
+        Te hemos preparado el primer mensaje. Al pulsar el botón se abrirá el chat y <strong>se copiará al portapapeles</strong> para que solo tengas que pegarlo y pulsar Enter.
+      </p>
+
+      <div class="chat-preview">
+        <h3 style="margin-bottom:1rem;">💬 Inmochat - Tu Asistente Virtual</h3>
+
+        <!-- Bloque asistido -->
+        <div id="auto-msg-cta" style="display:none; margin:1rem 0; padding:1rem; border:1px solid #e5e7eb; border-radius:12px;">
+          <div style="font-size:0.95rem; margin-bottom:0.6rem;">Mensaje preparado:</div>
+          <div id="auto-msg-preview" style="background:#f3f4f6; padding:0.75rem 1rem; border-radius:10px; font-size:0.95rem; margin-bottom:0.8rem;"></div>
+          <button id="open-and-copy" style="padding:0.65rem 1rem; border-radius:10px; border:none; cursor:pointer;">
+            Abrir chat y copiar mensaje
+          </button>
+          <div id="copy-hint" style="margin-top:0.6rem; font-size:0.9rem; color:#374151;"></div>
+        </div>
+
+        <!-- Dialogflow Messenger -->
+        <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+        <style>df-messenger{z-index:2147483647;}</style>
+        <df-messenger
+          id="inmochat"
+          chat-title="Inmochat"
+          agent-id="cc1ee5e0-d1f6-4789-8c1a-6489dbf65190"
+          language-code="es"
+          expand="true">
+        </df-messenger>
+      </div>
+    </div>
+  </section>
+
   <footer class="footer">
     <div class="footer-content">
       <div class="company-info">
@@ -460,35 +455,31 @@
     </div>
   </footer>
 
-  <!-- 5) SCRIPT -->
   <script>
-    // -------- Utils ----------
+    // utilidades
     const qs = new URLSearchParams(location.search);
     const getParam = k => qs.get(k);
 
-    // Cierra forzosamente el widget al cargar (por si quedó abierto en otra versión)
-    function forceCloseChat(){
+    function openChat(){
       const df = document.querySelector('df-messenger');
-      if (df) df.removeAttribute('expand'); // sin expand => cerrado
+      if (df) {
+        df.setAttribute('expand','true');
+        document.querySelector('#chatbot')?.scrollIntoView({ behavior:'smooth', block:'start' });
+      }
     }
 
-    // Copia al portapapeles con fallback
+    // copia al portapapeles (con fallback)
     async function copyToClipboard(text){
       try {
         await navigator.clipboard.writeText(text);
         return true;
       } catch(e){
+        // fallback viejo: crea un textarea temporal
         const ta = document.createElement('textarea');
         ta.value = text; document.body.appendChild(ta);
         ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
         return true;
       }
-    }
-
-    // Abre el chat cuando el usuario pulsa el botón
-    function openChat(){
-      const df = document.querySelector('df-messenger');
-      if (df) df.setAttribute('expand','true');
     }
 
     function setupAutoMessage(){
@@ -497,7 +488,7 @@
       const msg = urlMsg ? decodeURIComponent(urlMsg.replace(/\+/g,' '))
                          : (ref ? `Estoy interesad@ en el piso ${ref}` : '');
 
-      if (!msg) return; // si no hay mensaje, no mostramos el CTA
+      if (!msg) return;
 
       const cta = document.getElementById('auto-msg-cta');
       const preview = document.getElementById('auto-msg-preview');
@@ -508,24 +499,23 @@
       preview.textContent = msg;
 
       btn.addEventListener('click', async () => {
+        openChat();
         const ok = await copyToClipboard(msg);
         hint.innerHTML = ok
-          ? '✅ Texto copiado. <strong>Abriendo chat… pega en el cuadro y pulsa Enter</strong>.'
+          ? '✅ Texto copiado. <strong>Pega en el cuadro del chat y pulsa Enter</strong>.'
           : '❗No se pudo copiar automáticamente. Selecciona el texto, cópialo y pégalo en el chat.';
-        openChat();
+        // opcional: resaltar el chat para guiar al usuario
+        setTimeout(() => { document.querySelector('df-messenger')?.setAttribute('expand','true'); }, 100);
       });
     }
 
-    // Init
     document.addEventListener('DOMContentLoaded', () => {
-      forceCloseChat();   // <--- importante: arrancar con el chat cerrado
-      setupAutoMessage(); // muestra mensaje y botón
-      // Opcional: como esta sección es la primera, no hacemos scroll.
+      openChat();
+      setupAutoMessage();
     });
 
-    // Por si el widget usa su propio evento, aseguramos que se mantenga cerrado hasta clic
-    window.addEventListener('dfMessengerLoaded', forceCloseChat);
-    document.addEventListener('df-messenger-loaded', forceCloseChat);
+    window.addEventListener('dfMessengerLoaded', openChat);
+    document.addEventListener('df-messenger-loaded', openChat);
   </script>
 </body>
 
@@ -534,7 +524,9 @@
 
 
 
+
 </html>
+
 
 
 
