@@ -388,17 +388,25 @@
         <div class="feature-card">
           <div class="feature-icon">🏠</div>
           <h3 class="feature-title">Propiedades Exclusivas</h3>
-          <p class="feature-description">Acceso a una selección cuidadosamente curada de propiedades en alquiler, todas verificadas y de alta calidad para garantizar tu satisfacción.</p>
+          <p class="feature-description">
+            Acceso a una selección cuidadosamente curada de propiedades en alquiler, todas verificadas y de alta calidad para garantizar tu satisfacción.
+          </p>
         </div>
+
         <div class="feature-card">
           <div class="feature-icon">⚡</div>
           <h3 class="feature-title">Respuesta Inmediata</h3>
-          <p class="feature-description">Sistema automatizado de respuestas que te conecta al instante con la información que necesitas, sin esperas ni demoras.</p>
+          <p class="feature-description">
+            Sistema automatizado de respuestas que te conecta al instante con la información que necesitas, sin esperas ni demoras.
+          </p>
         </div>
+
         <div class="feature-card">
           <div class="feature-icon">🤖</div>
           <h3 class="feature-title">Asistente Inteligente</h3>
-          <p class="feature-description">Nuestro chatbot especializado está disponible 24/7 para resolver todas tus dudas y guiarte en el proceso de alquiler.</p>
+          <p class="feature-description">
+            Nuestro chatbot especializado está disponible 24/7 para resolver todas tus dudas y guiarte en el proceso de alquiler.
+          </p>
         </div>
       </div>
     </div>
@@ -447,104 +455,79 @@
   </footer>
 
   <script>
-    // --- Utils / efectos página ---
+    // ---------- utilidades mínimas ----------
     const qs = new URLSearchParams(location.search);
     const getParam = k => qs.get(k);
 
-    function smoothAnchorLinks(){
+    // scroll suave para el CTA
+    document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('a[href^="#"]').forEach(a=>{
-        a.addEventListener('click',e=>{
+        a.addEventListener('click', e=>{
           e.preventDefault();
-          document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth',block:'start'});
+          document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth', block:'start'});
         });
       });
-    }
-
-    const observerOptions={threshold:0.1,rootMargin:'0px 0px -50px 0px'};
-    const observer=new IntersectionObserver(entries=>{
-      entries.forEach(e=>{
-        if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}
-      });
-    },observerOptions);
-
-    document.addEventListener('DOMContentLoaded',()=>{
-      document.querySelectorAll('.feature-card').forEach((c,i)=>{
-        c.style.opacity='0';c.style.transform='translateY(30px)';
-        c.style.transition=`opacity .6s ease ${i*0.2}s, transform .6s ease ${i*0.2}s`;
-        observer.observe(c);
-      });
-      smoothAnchorLinks();
     });
 
-    // --- Auto abrir + auto-enviar (opción A) ---
-    let alreadyTried = false;
+    // ---------- enviar como "usuario" (burbuja gris) ----------
+    let sentOnce = false;
 
-    function ensureOpen(df){
-      // abre siempre el widget
-      df.setAttribute('expand','true');
-      document.querySelector('#chatbot')?.scrollIntoView({behavior:'smooth',block:'start'});
-    }
+    function typeAndSend(df, msg){
+      let tries = 0, maxTries = 30; // ~3.6s
+      (function wait(){
+        const sr = df.shadowRoot;
+        const input = sr && (sr.querySelector('textarea') || sr.querySelector('input[type="text"]'));
+        if (!input && tries++ < maxTries) return setTimeout(wait, 120);
 
-    function sendToMessenger(df,msg){
-      try{ if(typeof df.requestQuery==='function'){ df.requestQuery({query:msg}); return true; } }catch(e){}
-      try{ if(typeof df.sendQuery==='function'){ df.sendQuery(msg); return true; } }catch(e){}
-      try{
-        const ev=new CustomEvent('dfMessengerSend',{detail:{query:msg}});
-        df.dispatchEvent(ev); window.dispatchEvent(ev);
-      }catch(e){}
-      // Fallback: shadow DOM
-      try{
-        const sr=df.shadowRoot;
-        const input=sr && sr.querySelector('textarea, input[type="text"]');
-        if(input){
-          input.value=msg;
-          input.dispatchEvent(new Event('input',{bubbles:true}));
-          input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
-          const sendBtn=sr.querySelector('[aria-label="Send"],button[type="submit"],.send,.send-button');
-          if(sendBtn) sendBtn.click();
-          return true;
+        if (input){
+          input.value = msg;
+          input.dispatchEvent(new Event('input', { bubbles:true }));
+          input.focus();
+
+          // Enter (compatibilidad)
+          ['keydown','keypress','keyup'].forEach(t =>
+            input.dispatchEvent(new KeyboardEvent(t, { key:'Enter', code:'Enter', bubbles:true }))
+          );
+
+          const sendBtn = sr.querySelector('[aria-label="Send"], button[type="submit"], .send, .send-button');
+          if (sendBtn) sendBtn.click();
         }
-      }catch(e){}
-      return false;
+      })();
     }
 
     function boot(){
-      const df=document.querySelector('df-messenger');
-      if(!df || alreadyTried) return;
-      alreadyTried = true;
+      if (sentOnce) return;
+      const df = document.querySelector('df-messenger');
+      if (!df) return;
 
-      ensureOpen(df); // <-- abrir siempre
+      // abrir siempre el chat y llevar el scroll a la sección
+      df.setAttribute('expand','true');
+      document.querySelector('#chatbot')?.scrollIntoView({ behavior:'smooth', block:'start' });
 
-      const ref=(getParam('ref')||'').trim();
-      const urlMsg=getParam('msg');
+      // construir el mensaje desde ?ref= y/o ?msg=
+      const ref = (getParam('ref') || '').trim();
+      const urlMsg = getParam('msg');
       const msg = urlMsg ? decodeURIComponent(urlMsg.replace(/\+/g,' '))
                          : (ref ? `Estoy interesad@ en el piso ${ref}` : '');
 
-      // si hay mensaje, lo pintamos y lo enviamos; si no, al menos queda abierto
-      if(msg){
-        if(typeof df.renderCustomText==='function'){ df.renderCustomText(msg); }
-        // esperar a que exista el input interno, luego enviar
-        let tries=0;
-        (function wait(){
-          const ready=df.shadowRoot && df.shadowRoot.querySelector('textarea, input[type="text"]');
-          if(!ready && tries<15){ tries++; return setTimeout(wait,120); }
-          sendToMessenger(df,msg);
-        })();
-      }
+      if (!msg) return;
+      sentOnce = true; // evita dobles envíos si llegan varios eventos
+      // importante: NO usar renderCustomText / requestQuery para que la burbuja sea gris
+      typeAndSend(df, msg);
     }
 
-    // Soporta ambos nombres de evento (según build)
+    // soporta variantes del evento del widget + fallback por si no dispara
     window.addEventListener('dfMessengerLoaded', boot);
     document.addEventListener('df-messenger-loaded', boot);
-
-    // Fallback: por si el evento no llega, intenta a los 800 ms
-    setTimeout(boot, 800);
+    setTimeout(boot, 900);
   </script>
 </body>
 
 
 
+
 </html>
+
 
 
 
