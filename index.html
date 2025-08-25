@@ -421,9 +421,19 @@
 
       <div class="chat-preview">
         <h3 style="margin-bottom: 1rem;">💬 Inmochat - Tu Asistente Virtual</h3>
-        <p style="margin-bottom: 2rem;">Habla directamente con nuestro asistente virtual. Está aquí para ayudarte con todas tus preguntas sobre la propiedad.</p>
+        <p style="margin-bottom: 0.5rem;">Habla directamente con nuestro asistente virtual. Está aquí para ayudarte con todas tus preguntas sobre la propiedad.</p>
 
-        <!-- Dialogflow Messenger -->
+        <!-- CTA para enviar como usuario -->
+        <div id="auto-msg-cta" style="display:none; margin: 1rem 0; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 12px;">
+          <div style="font-size:0.95rem; margin-bottom:0.6rem;">Mensaje listo para enviar:</div>
+          <div id="auto-msg-preview" style="background:#f3f4f6; padding:0.75rem 1rem; border-radius:10px; font-size:0.95rem; margin-bottom:0.8rem;"></div>
+          <button id="send-as-user" style="padding:0.65rem 1rem; border-radius:10px; border:none; cursor:pointer;">
+            Enviar ahora
+          </button>
+          <span id="send-hint" style="margin-left:0.6rem; font-size:0.85rem; color:#6b7280;"></span>
+        </div>
+
+        <!-- Dialogflow Messenger (solo una vez) -->
         <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
         <style>df-messenger{z-index:2147483647;}</style>
         <df-messenger
@@ -455,78 +465,83 @@
   </footer>
 
   <script>
-    // ---------- utilidades mínimas ----------
+    // ---------- utilidades ----------
     const qs = new URLSearchParams(location.search);
     const getParam = k => qs.get(k);
 
-    // scroll suave para el CTA
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('a[href^="#"]').forEach(a=>{
-        a.addEventListener('click', e=>{
-          e.preventDefault();
-          document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth', block:'start'});
-        });
-      });
-    });
-
-    // ---------- enviar como "usuario" (burbuja gris) ----------
-    let sentOnce = false;
-
-    function typeAndSend(df, msg){
-      let tries = 0, maxTries = 30; // ~3.6s
-      (function wait(){
-        const sr = df.shadowRoot;
-        const input = sr && (sr.querySelector('textarea') || sr.querySelector('input[type="text"]'));
-        if (!input && tries++ < maxTries) return setTimeout(wait, 120);
-
-        if (input){
-          input.value = msg;
-          input.dispatchEvent(new Event('input', { bubbles:true }));
-          input.focus();
-
-          // Enter (compatibilidad)
-          ['keydown','keypress','keyup'].forEach(t =>
-            input.dispatchEvent(new KeyboardEvent(t, { key:'Enter', code:'Enter', bubbles:true }))
-          );
-
-          const sendBtn = sr.querySelector('[aria-label="Send"], button[type="submit"], .send, .send-button');
-          if (sendBtn) sendBtn.click();
-        }
-      })();
+    // abrir y hacer scroll al bloque del chat
+    function openChat(){
+      const df = document.querySelector('df-messenger');
+      if (df) {
+        df.setAttribute('expand', 'true');
+        document.querySelector('#chatbot')?.scrollIntoView({ behavior:'smooth', block:'start' });
+      }
     }
 
-    function boot(){
-      if (sentOnce) return;
-      const df = document.querySelector('df-messenger');
-      if (!df) return;
+    // intento de envío usando APIs/Evento del widget (sin tocar shadow DOM)
+    function sendViaAPIs(df, msg){
+      try { if (typeof df.requestQuery === 'function') { df.requestQuery({ query: msg }); return true; } } catch(e){}
+      try { if (typeof df.sendQuery === 'function')   { df.sendQuery(msg);                return true; } } catch(e){}
+      try {
+        const ev = new CustomEvent('dfMessengerSend', { detail: { query: msg } });
+        df.dispatchEvent(ev); window.dispatchEvent(ev);
+        // algunas builds lo aceptan
+        return true;
+      } catch(e){}
+      return false;
+    }
 
-      // abrir siempre el chat y llevar el scroll a la sección
-      df.setAttribute('expand','true');
-      document.querySelector('#chatbot')?.scrollIntoView({ behavior:'smooth', block:'start' });
-
-      // construir el mensaje desde ?ref= y/o ?msg=
+    function setupAutoMessage(){
       const ref = (getParam('ref') || '').trim();
       const urlMsg = getParam('msg');
       const msg = urlMsg ? decodeURIComponent(urlMsg.replace(/\+/g,' '))
                          : (ref ? `Estoy interesad@ en el piso ${ref}` : '');
 
-      if (!msg) return;
-      sentOnce = true; // evita dobles envíos si llegan varios eventos
-      // importante: NO usar renderCustomText / requestQuery para que la burbuja sea gris
-      typeAndSend(df, msg);
+      if (!msg) return; // no hay mensaje preconfigurado
+
+      // muestra el CTA
+      const cta = document.getElementById('auto-msg-cta');
+      const preview = document.getElementById('auto-msg-preview');
+      const btn = document.getElementById('send-as-user');
+      const hint = document.getElementById('send-hint');
+      cta.style.display = 'block';
+      preview.textContent = msg;
+
+      btn.addEventListener('click', () => {
+        const df = document.querySelector('df-messenger');
+        if (!df) return;
+
+        openChat();
+        const ok = sendViaAPIs(df, msg);
+
+        // feedback al usuario
+        hint.textContent = ok
+          ? 'Enviado al asistente.'
+          : 'Si no se envía, escribe cualquier letra en el cuadro y pulsa Enter.';
+
+        // opcional: ocultar CTA tras enviar
+        // cta.style.display = 'none';
+      });
     }
 
-    // soporta variantes del evento del widget + fallback por si no dispara
-    window.addEventListener('dfMessengerLoaded', boot);
-    document.addEventListener('df-messenger-loaded', boot);
-    setTimeout(boot, 900);
+    // iniciar
+    document.addEventListener('DOMContentLoaded', () => {
+      openChat();
+      setupAutoMessage();
+    });
+
+    // por si el widget necesita su propio evento para estar listo
+    window.addEventListener('dfMessengerLoaded', openChat);
+    document.addEventListener('df-messenger-loaded', openChat);
   </script>
 </body>
 
 
 
 
+
 </html>
+
 
 
 
