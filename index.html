@@ -423,7 +423,7 @@
         <h3 style="margin-bottom: 1rem;">💬 Inmochat - Tu Asistente Virtual</h3>
         <p style="margin-bottom: 2rem;">Habla directamente con nuestro asistente virtual. Está aquí para ayudarte con todas tus preguntas sobre la propiedad.</p>
 
-        <!-- Dialogflow Messenger (solo una vez) -->
+        <!-- Dialogflow Messenger -->
         <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
         <df-messenger
           chat-title="Inmochat"
@@ -463,23 +463,23 @@
   </footer>
 
   <script>
-    // ---- Utilidades ----
+    // ------- Utils -------
     const qs = new URLSearchParams(location.search);
     const getParam = (k) => qs.get(k);
 
     function smoothAnchorLinks() {
       document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
+        anchor.addEventListener('click', e => {
           e.preventDefault();
-          const target = document.querySelector(this.getAttribute('href'));
+          const target = document.querySelector(anchor.getAttribute('href'));
           if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
       });
     }
 
-    // ---- Animación de tarjetas ----
+    // ------- Animación de tarjetas -------
     const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
-    const observer = new IntersectionObserver((entries) => {
+    const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.style.opacity = '1';
@@ -490,50 +490,74 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       const cards = document.querySelectorAll('.feature-card');
-      cards.forEach((card, index) => {
+      cards.forEach((card, i) => {
         card.style.opacity = '0';
         card.style.transform = 'translateY(30px)';
-        card.style.transition = `opacity 0.6s ease ${index * 0.2}s, transform 0.6s ease ${index * 0.2}s`;
+        card.style.transition = `opacity 0.6s ease ${i * 0.2}s, transform 0.6s ease ${i * 0.2}s`;
         observer.observe(card);
       });
       smoothAnchorLinks();
     });
 
-    // ---- Auto-mensaje a Dialogflow con ?ref= y/o ?msg= ----
-    let alreadySent = false; // evita dobles envíos
+    // ------- Auto-mensaje (opción A) -------
+    let alreadySent = false;
+
+    function actuallySend(df, msg) {
+      let sent = false;
+
+      try { if (typeof df.requestQuery === 'function') { df.requestQuery({ query: msg }); sent = true; } } catch(e) {}
+      try { if (!sent && typeof df.sendQuery === 'function') { df.sendQuery(msg); sent = true; } } catch(e) {}
+
+      // Fallback: simular escribir y pulsar enviar dentro del shadow DOM
+      if (!sent && df.shadowRoot) {
+        const sr = df.shadowRoot;
+        const input = sr.querySelector('textarea, input[type="text"]');
+        if (input) {
+          input.value = msg;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          const sendBtn = sr.querySelector('[aria-label="Send"], button[type="submit"], .send, .send-button');
+          if (sendBtn) sendBtn.click();
+        }
+      }
+    }
 
     window.addEventListener('dfMessengerLoaded', () => {
       const df = document.querySelector('df-messenger');
       if (!df || alreadySent) return;
 
       const ref = (getParam('ref') || '').trim();
-      const urlMsg = getParam('msg'); // ya vendrá URI-encoded desde tu email
-      const msg = urlMsg ? decodeURIComponent(urlMsg) : (ref ? `Estoy interesad@ en el piso ${ref}` : null);
-
+      // msg puede venir en ?msg (URI-encoded) o se construye con la ref
+      const urlMsg = getParam('msg');
+      const msg = urlMsg ? decodeURIComponent(urlMsg.replace(/\+/g, ' ')) : (ref ? `Estoy interesad@ en el piso ${ref}` : null);
       if (!msg) return;
 
-      // Pinta la burbuja como si la escribiera el usuario
-      if (typeof df.renderCustomText === 'function') {
-        df.renderCustomText(msg);
-      }
+      // Espera a que el widget esté realmente listo (input presente)
+      const waitUntilReady = () => {
+        const ready = df.shadowRoot && df.shadowRoot.querySelector('textarea, input[type="text"]');
+        if (!ready) return setTimeout(waitUntilReady, 150);
 
-      // Envía el mensaje al agente (dispara tus intents)
-      if (typeof df.requestQuery === 'function') {
-        df.requestQuery({ query: msg });
-      } else if (typeof df.sendQuery === 'function') {
-        df.sendQuery(msg);
-      }
+        // Pinta burbuja de usuario
+        if (typeof df.renderCustomText === 'function') df.renderCustomText(msg);
 
-      // Abre el widget y baja al bloque
-      df.setAttribute('expand', 'true');
-      document.querySelector('#chatbot')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Abre el widget y baja al bloque
+        df.setAttribute('expand', 'true');
+        document.querySelector('#chatbot')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-      alreadySent = true;
+        // Envía (con pequeño delay para asegurar sesión)
+        setTimeout(() => {
+          actuallySend(df, msg);
+          alreadySent = true;
+        }, 150);
+      };
+
+      waitUntilReady();
     });
   </script>
 </body>
 
 
+
 </html>
+
 
 
