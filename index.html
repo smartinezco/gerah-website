@@ -362,17 +362,17 @@
 </head>
     <body>
 
-  <!-- 1) SECCIÓN DEL CHAT (AHORA LA PRIMERA) -->
+  <!-- 1) SECCIÓN DEL CHAT (LA PRIMERA) -->
   <section class="chatbot-section" id="chatbot">
     <div class="chatbot-container">
       <h2 class="chatbot-title">Habla Con Nuestro Asistente</h2>
       <p class="chatbot-description">
-        Te hemos preparado el primer mensaje. Al pulsar el botón se abrirá el chat y <strong>se copiará al portapapeles</strong>
-        para que solo tengas que pegarlo y pulsar Enter.
+        Te hemos preparado el primer mensaje. Al pulsar el botón se abrirá el chat y
+        <strong>se copiará al portapapeles</strong> para que solo tengas que pegarlo y pulsar Enter.
       </p>
 
       <div class="chat-preview">
-        <h3 style="margin-bottom:1rem;">💬 Inmochat - Tu Asistente Virtual</h3>
+        <h3 style="margin-bottom:1rem;">💬 Inmochat – Tu Asistente Virtual</h3>
 
         <!-- Bloque asistido (mensaje listo + botón) -->
         <div id="auto-msg-cta" style="display:none; margin:1rem 0; padding:1rem; border:1px solid #e5e7eb; border-radius:12px;">
@@ -384,7 +384,7 @@
           <div id="copy-hint" style="margin-top:0.6rem; font-size:0.9rem; color:#374151;"></div>
         </div>
 
-        <!-- Dialogflow Messenger -->
+        <!-- Dialogflow Messenger (cerrado por defecto) -->
         <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
         <style>df-messenger{z-index:2147483647;}</style>
         <df-messenger
@@ -397,7 +397,7 @@
     </div>
   </section>
 
-  <!-- 2) HERO (AHORA DEBAJO DEL CHAT) -->
+  <!-- 2) HERO -->
   <section class="hero-section">
     <div class="floating-elements">
       <div class="floating-element"></div>
@@ -426,25 +426,17 @@
         <div class="feature-card">
           <div class="feature-icon">🏠</div>
           <h3 class="feature-title">Propiedades Exclusivas</h3>
-          <p class="feature-description">
-            Acceso a una selección cuidadosamente curada de propiedades en alquiler, todas verificadas y de alta calidad para garantizar tu satisfacción.
-          </p>
+          <p class="feature-description">Acceso a una selección cuidadosamente curada de propiedades en alquiler, todas verificadas y de alta calidad.</p>
         </div>
-
         <div class="feature-card">
           <div class="feature-icon">⚡</div>
           <h3 class="feature-title">Respuesta Inmediata</h3>
-          <p class="feature-description">
-            Sistema automatizado de respuestas que te conecta al instante con la información que necesitas, sin esperas ni demoras.
-          </p>
+          <p class="feature-description">Sistema automatizado de respuestas que te conecta al instante con la información que necesitas.</p>
         </div>
-
         <div class="feature-card">
           <div class="feature-icon">🤖</div>
           <h3 class="feature-title">Asistente Inteligente</h3>
-          <p class="feature-description">
-            Nuestro chatbot especializado está disponible 24/7 para resolver todas tus dudas y guiarte en el proceso de alquiler.
-          </p>
+          <p class="feature-description">Nuestro chatbot está disponible 24/7 para resolver tus dudas y guiarte en el proceso de alquiler.</p>
         </div>
       </div>
     </div>
@@ -470,19 +462,17 @@
 
   <!-- 5) SCRIPT -->
   <script>
-    // --- utilidades ---
+    // -------- Utils ----------
     const qs = new URLSearchParams(location.search);
     const getParam = k => qs.get(k);
 
-    function openChat(){
+    // Cierra forzosamente el widget al cargar (por si quedó abierto en otra versión)
+    function forceCloseChat(){
       const df = document.querySelector('df-messenger');
-      if (df) {
-        df.setAttribute('expand','true');
-        // ya es la primera sección, no hace falta scroll, pero lo dejamos por si la maquetación cambia
-        document.querySelector('#chatbot')?.scrollIntoView({ behavior:'smooth', block:'start' });
-      }
+      if (df) df.removeAttribute('expand'); // sin expand => cerrado
     }
 
+    // Copia al portapapeles con fallback
     async function copyToClipboard(text){
       try {
         await navigator.clipboard.writeText(text);
@@ -495,13 +485,19 @@
       }
     }
 
+    // Abre el chat cuando el usuario pulsa el botón
+    function openChat(){
+      const df = document.querySelector('df-messenger');
+      if (df) df.setAttribute('expand','true');
+    }
+
     function setupAutoMessage(){
       const ref = (getParam('ref') || '').trim();
       const urlMsg = getParam('msg');
       const msg = urlMsg ? decodeURIComponent(urlMsg.replace(/\+/g,' '))
                          : (ref ? `Estoy interesad@ en el piso ${ref}` : '');
 
-      if (!msg) return;
+      if (!msg) return; // si no hay mensaje, no mostramos el CTA
 
       const cta = document.getElementById('auto-msg-cta');
       const preview = document.getElementById('auto-msg-preview');
@@ -512,24 +508,24 @@
       preview.textContent = msg;
 
       btn.addEventListener('click', async () => {
-        openChat();
         const ok = await copyToClipboard(msg);
         hint.innerHTML = ok
-          ? '✅ Texto copiado. <strong>Pega en el cuadro del chat y pulsa Enter</strong>.'
+          ? '✅ Texto copiado. <strong>Abriendo chat… pega en el cuadro y pulsa Enter</strong>.'
           : '❗No se pudo copiar automáticamente. Selecciona el texto, cópialo y pégalo en el chat.';
+        openChat();
       });
     }
 
-    // animaciones ligeras (opcional)
+    // Init
     document.addEventListener('DOMContentLoaded', () => {
-      // si tienes animaciones/observer de tarjetas, puedes reusarlas aquí
-      setupAutoMessage();
-      openChat();
+      forceCloseChat();   // <--- importante: arrancar con el chat cerrado
+      setupAutoMessage(); // muestra mensaje y botón
+      // Opcional: como esta sección es la primera, no hacemos scroll.
     });
 
-    // por si el widget requiere su evento propio
-    window.addEventListener('dfMessengerLoaded', openChat);
-    document.addEventListener('df-messenger-loaded', openChat);
+    // Por si el widget usa su propio evento, aseguramos que se mantenga cerrado hasta clic
+    window.addEventListener('dfMessengerLoaded', forceCloseChat);
+    document.addEventListener('df-messenger-loaded', forceCloseChat);
   </script>
 </body>
 
@@ -539,6 +535,7 @@
 
 
 </html>
+
 
 
 
