@@ -450,101 +450,120 @@
   </footer>
 
   <script>
-    // ------- Utils -------
-    const qs = new URLSearchParams(location.search);
-    const getParam = (k) => qs.get(k);
+  // ---- Utilidades y efectos de la página (sin cambios) ----
+  const qs = new URLSearchParams(location.search);
+  const getParam = (k) => qs.get(k);
 
-    function smoothAnchorLinks() {
-      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', e => {
-          e.preventDefault();
-          const target = document.querySelector(anchor.getAttribute('href'));
-          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
+  function smoothAnchorLinks() {
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(anchor.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
-    }
-
-    // ------- Animación de tarjetas -------
-    const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = 'translateY(0)';
-        }
-      });
-    }, observerOptions);
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const cards = document.querySelectorAll('.feature-card');
-      cards.forEach((card, i) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(30px)';
-        card.style.transition = `opacity 0.6s ease ${i * 0.2}s, transform 0.6s ease ${i * 0.2}s`;
-        observer.observe(card);
-      });
-      smoothAnchorLinks();
     });
+  }
 
-    // ------- Auto-mensaje (opción A) -------
-    let alreadySent = false;
+  const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, observerOptions);
 
-    function actuallySend(df, msg) {
-      let sent = false;
+  document.addEventListener('DOMContentLoaded', () => {
+    const cards = document.querySelectorAll('.feature-card');
+    cards.forEach((card, i) => {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(30px)';
+      card.style.transition = `opacity 0.6s ease ${i * 0.2}s, transform 0.6s ease ${i * 0.2}s`;
+      observer.observe(card);
+    });
+    smoothAnchorLinks();
+  });
 
-      try { if (typeof df.requestQuery === 'function') { df.requestQuery({ query: msg }); sent = true; } } catch(e) {}
-      try { if (!sent && typeof df.sendQuery === 'function') { df.sendQuery(msg); sent = true; } } catch(e) {}
+  // ---- Envío automático (Opción A) súper robusto ----
+  let alreadySent = false;
 
-      // Fallback: simular escribir y pulsar enviar dentro del shadow DOM
-      if (!sent && df.shadowRoot) {
-        const sr = df.shadowRoot;
+  function sendToMessenger(df, msg) {
+    // 1) APIs públicas si existen
+    try { if (typeof df.requestQuery === 'function') { df.requestQuery({ query: msg }); return true; } } catch(e) {}
+    try { if (typeof df.sendQuery === 'function')   { df.sendQuery(msg);                return true; } } catch(e) {}
+
+    // 2) Evento que algunos builds escuchan
+    try {
+      const ev = new CustomEvent('dfMessengerSend', { detail: { query: msg } });
+      df.dispatchEvent(ev);
+      window.dispatchEvent(ev);
+      // no sabemos si lo aceptó; seguimos con fallback por si acaso
+    } catch(e) {}
+
+    // 3) Fallback: escribir en el input del shadow DOM y simular Enter/click
+    try {
+      const sr = df.shadowRoot;
+      if (sr) {
         const input = sr.querySelector('textarea, input[type="text"]');
         if (input) {
           input.value = msg;
           input.dispatchEvent(new Event('input', { bubbles: true }));
+          // intenta Enter
+          input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+          // intenta botón Enviar si existe
           const sendBtn = sr.querySelector('[aria-label="Send"], button[type="submit"], .send, .send-button');
           if (sendBtn) sendBtn.click();
+          return true;
         }
       }
+    } catch(e) {}
+
+    return false;
+  }
+
+  function autoStart() {
+    const df = document.querySelector('df-messenger');
+    if (!df || alreadySent) return;
+
+    const ref = (getParam('ref') || '').trim();
+    // msg puede venir en ?msg= (URI-encoded). Reemplaza '+' (email) por espacio.
+    const urlMsg = getParam('msg');
+    const msg = urlMsg ? decodeURIComponent(urlMsg.replace(/\+/g, ' ')) :
+               (ref ? `Estoy interesad@ en el piso ${ref}` : null);
+
+    if (!msg) return;
+
+    // Pinta la burbuja como si fuera el usuario
+    if (typeof df.renderCustomText === 'function') {
+      df.renderCustomText(msg);
     }
 
-    window.addEventListener('dfMessengerLoaded', () => {
-      const df = document.querySelector('df-messenger');
-      if (!df || alreadySent) return;
+    // Abre el widget y baja al bloque
+    df.setAttribute('expand', 'true');
+    document.querySelector('#chatbot')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-      const ref = (getParam('ref') || '').trim();
-      // msg puede venir en ?msg (URI-encoded) o se construye con la ref
-      const urlMsg = getParam('msg');
-      const msg = urlMsg ? decodeURIComponent(urlMsg.replace(/\+/g, ' ')) : (ref ? `Estoy interesad@ en el piso ${ref}` : null);
-      if (!msg) return;
+    // Espera a que el input interno exista, luego envía (máx. ~2s)
+    let tries = 0;
+    (function waitAndSend() {
+      const ready = df.shadowRoot && df.shadowRoot.querySelector('textarea, input[type="text"]');
+      if (!ready && tries < 12) { tries++; return setTimeout(waitAndSend, 150); }
+      sendToMessenger(df, msg);
+      alreadySent = true;
+    })();
+  }
 
-      // Espera a que el widget esté realmente listo (input presente)
-      const waitUntilReady = () => {
-        const ready = df.shadowRoot && df.shadowRoot.querySelector('textarea, input[type="text"]');
-        if (!ready) return setTimeout(waitUntilReady, 150);
+  // Escucha ambos nombres de evento (según build)
+  window.addEventListener('dfMessengerLoaded', autoStart);
+  document.addEventListener('df-messenger-loaded', autoStart);
+</script>
 
-        // Pinta burbuja de usuario
-        if (typeof df.renderCustomText === 'function') df.renderCustomText(msg);
-
-        // Abre el widget y baja al bloque
-        df.setAttribute('expand', 'true');
-        document.querySelector('#chatbot')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-        // Envía (con pequeño delay para asegurar sesión)
-        setTimeout(() => {
-          actuallySend(df, msg);
-          alreadySent = true;
-        }, 150);
-      };
-
-      waitUntilReady();
-    });
-  </script>
 </body>
 
 
 
 </html>
+
 
 
 
